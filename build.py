@@ -1,10 +1,11 @@
+﻿import glob
 import os
 import urllib2
 import shutil
 import csv
-import pickle
-from django.template import Context, Template
-from django.conf import settings
+#import pickle
+#from django.template import Context, Template
+#from django.conf import settings
 
 source_file = 'wishlist.txt'
 data_file = 'wishlist-data.txt'
@@ -49,6 +50,7 @@ def read_source_file(source_file):
 		print('Error reading source file: ' + str(ex))
 		return []
 
+# Returns a collection of [width, height] for a set of image files
 def get_image_size(images_list):
 	try:
 		result = []
@@ -63,6 +65,7 @@ def get_image_size(images_list):
 		print('Error reading source file: ' + str(ex))
 		return []
 
+# Downloads and save a file from URL
 def download(url, fileName = None):
     def getFileName(url, openUrl):
         if 'Content-Disposition' in openUrl.info():
@@ -82,6 +85,7 @@ def download(url, fileName = None):
     finally:
         r.close()
 
+# Save wishlist records to CSV file
 def save_data(csv_file, data):
 	
 	def to_csv_row(record):
@@ -99,6 +103,7 @@ def save_data(csv_file, data):
 	except Exception as ex:
 		print('Error saving data to %s: %s' % (csv_file, str(ex)))
 
+# Load wishlist records from CSV file
 def load_data(csv_file):
 	
 	def to_dict(row):
@@ -132,19 +137,50 @@ def merge_data(new_data, cached_data):
 	for item in new_data:
 		existing = get_existing(cached_data)
 		if existing != None:
+			if existing['image_url'] != item['image_url']:
+				existing.update({'image_id':0, 'width':0, 'height':0})
 			existing.update(item)
-			result.append()
+			result.append(existing)
 		else:
 			item.update({'image_id':0, 'width':0, 'height':0})
 			result.append(item)
 	return result
 
+class FileIdGenerator:
+	
+	counter = 0
+	
+	dirPath = ''
+	
+	def __init__(self, path):
+		self.dirPath = path
+	
+	def newId(self):
+		print glob.glob(os.path.join(dirname, filespec))
+#		while()
+		file_id_generator.counter += 1
+		return file_id_generator.counter
+	
 
-data = read_source_file(source_file)
-data = merge_data(data, [])
-save_data(data_file, data)
-save_data('wishlist-data2.txt', load_data(data_file))
+# Download images for wishlist records
+def download_images(data):
+	# Извлечь URL картинок для всех записей, где imade_id == 0
+	# Скачать эти картинки
+	# Для каждой картинки задать image_id (так, чтобы олни не пересекались с существующими)
+	# Отмасштабировать вся скаченные картинки и положить в кеш
+	# Определить размер для каждой новой картинки
+	# Обновить данные
+	images = {}
+	for record in data: images[record['image_url'], 0]
 
+data = merge_data(read_source_file(source_file), load_data(data_file))
+save_data('merged-data.txt', data)
+
+#igGen = FileIdGenerator(image_path)
+#print igGen.dirPath
+
+#id_gen = new image_id_generator()
+#print id_gen.new_image_id()
 
 
 #save_data(data_file, 1)
