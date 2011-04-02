@@ -1,18 +1,21 @@
-﻿import glob
+﻿from genericpath import exists
+import glob
 import os
+import os.path
 import urllib2
 import shutil
 import csv
-#import pickle
 #from django.template import Context, Template
 #from django.conf import settings
+from urlparse import urlsplit
+import urlparse
 
 source_file = 'wishlist.txt'
 data_file = 'wishlist-data.txt'
 tmp_path = 'tmp/'
 image_path = 'images/'
-identify_cmd = 'd:/bin/imagemagick/identify -format %%f,%%W,%%H\\n %s'
-
+identify_cmd = 'identify -format %%f,%%W,%%H\\n %s'
+mogrify_cmd = 'mogrify -define filter:blur=0.75 -filter cubic -resize %dx%d^> %s'
 csv_delimiter = ';'
 
 # read source file
@@ -29,44 +32,44 @@ csv_delimiter = ';'
 # save data
 # generate html
 
-# Returns a collection of { url, image_url, description } tuples
 def read_source_file(source_file):
-	if not os.path.exists(source_file):
-		print('Source file does not exists: ' + source_file)
-		return []
-	
-	try:
-		result = []
-		for item in open(source_file, 'r').read().strip().split('\n\n'):
-			parts = item.split('\n')
-			if len(parts) != 3: continue
-			description, url, image_url = parts
-			result.append({ 'url':url.strip(), 
-							'image_url':image_url.strip(), 
-							'desc':description.strip() })
-		return result
-		
-	except Exception as ex:
-		print('Error reading source file: ' + str(ex))
-		return []
+    '''Returns a collection of { url, image_url, description } tuples'''
+    if not os.path.exists(source_file):
+        print('Source file does not exists: ' + source_file)
+        return []
 
-# Returns a collection of [width, height] for a set of image files
+    try:
+        result = []
+        for item in open(source_file, 'r').read().strip().split('\n\n'):
+            parts = item.split('\n')
+            if len(parts) != 3: continue
+            description, url, image_url = parts
+            result.append({ 'url':url.strip(),
+                            'image_url':image_url.strip(),
+                            'desc':description.strip() })
+        return result
+
+    except Exception as ex:
+        print('Error reading source file: ' + str(ex))
+        return []
+
 def get_image_size(images_list):
-	try:
-		result = []
-		for line in os.popen(identify_cmd % ' '.join(images_list)).readlines():
-			parts = line.split(',')
-			if len(parts) != 3: continue
-			file_name, width, height = parts
-			result.append([file_name.strip(), int(width.strip()), int(height.strip())])
-		return result
-	
-	except Exception as ex:
-		print('Error reading source file: ' + str(ex))
-		return []
+    '''Returns a collection of [width, height] for a set of image files'''
+    try:
+        result = []
+        for line in os.popen(identify_cmd % ' '.join(images_list)).readlines():
+            parts = line.split(',')
+            if len(parts) != 3: continue
+            file_name, width, height = parts
+            result.append([file_name.strip(), int(width.strip()), int(height.strip())])
+        return result
 
-# Downloads and save a file from URL
+    except Exception as ex:
+        print('Error getting image resolution: ' + str(ex))
+        return []
+
 def download(url, fileName = None):
+    '''Downloads and save a file from URL'''
     def getFileName(url, openUrl):
         if 'Content-Disposition' in openUrl.info():
             cd = dict(map(
@@ -75,7 +78,7 @@ def download(url, fileName = None):
             if 'filename' in cd:
                 filename = cd['filename'].strip("\"'")
                 if filename: return filename
-        return basename(urlsplit(openUrl.url)[2])
+        return os.path.basename(urlsplit(openUrl.url)[2])
 
     r = urllib2.urlopen(urllib2.Request(url))
     try:
@@ -85,96 +88,92 @@ def download(url, fileName = None):
     finally:
         r.close()
 
-# Save wishlist records to CSV file
 def save_data(csv_file, data):
-	
-	def to_csv_row(record):
-		try:
-			return [record['url'], record['image_url'], record['image_id'], 
-					record['width'], record['height'], record['desc']]
-		except:
-			return None
-		
-	try:
-		writer = csv.writer(open(csv_file, 'wb'), delimiter = csv_delimiter, quoting = csv.QUOTE_MINIMAL)
-		for row in [to_csv_row(record) for record in data]:
-			if row != None: writer.writerow(row)
-		
-	except Exception as ex:
-		print('Error saving data to %s: %s' % (csv_file, str(ex)))
+    '''Save wishlist records to CSV file'''
+    def to_csv_row(record):
+        try:
+            return [record['url'], record['image_url'], record['image_id'],
+                    record['width'], record['height'], record['desc']]
+        except:
+            return None
 
-# Load wishlist records from CSV file
+    try:
+        writer = csv.writer(open(csv_file, 'wb'), delimiter = csv_delimiter, quoting = csv.QUOTE_MINIMAL)
+        for row in [to_csv_row(record) for record in data]:
+            if row is not None: writer.writerow(row)
+
+    except Exception as ex:
+        print('Error saving data to %s: %s' % (csv_file, str(ex)))
+
 def load_data(csv_file):
-	
-	def to_dict(row):
-		try:
-			return { 'url':row[0], 'image_url':row[1], 'image_id':row[2], 
-					 'width':row[3], 'height':row[4], 'desc':row[5] }
-		except:
-			return None
-	
-	try:
-		result = []
-		reader = csv.reader(open(csv_file, 'rb'), delimiter = csv_delimiter)
-		for record in [to_dict(row) for row in reader]:
-			if record != None: result.append(record)
-		return result
-		
-	except Exception as ex:
-		print('Error loading data from %s: %s' % (csv_file, str(ex)))
+    '''Load wishlist records from CSV file'''
+    def to_dict(row):
+        try:
+            return { 'url':row[0], 'image_url':row[1], 'image_id':row[2],
+                     'width':row[3], 'height':row[4], 'desc':row[5] }
+        except:
+            return None
 
-# Merge new data from source file and cached data
+    try:
+        result = []
+        reader = csv.reader(open(csv_file, 'rb'), delimiter = csv_delimiter)
+        for record in [to_dict(row) for row in reader]:
+            if record is not None: result.append(record)
+        return result
+
+    except Exception as ex:
+        print('Error loading data from %s: %s' % (csv_file, str(ex)))
+
 def merge_data(new_data, cached_data):
-	
-	def get_existing(cached_data):
-		try:
-			if cached_data == None or len(cached_data) == 0: return None
-			return (r for r in cached_data if r['url'] == item['url']).next()
-		except:
-			return None
-	
-	result = []
-	for item in new_data:
-		existing = get_existing(cached_data)
-		if existing != None:
-			if existing['image_url'] != item['image_url']:
-				existing.update({'image_id':0, 'width':0, 'height':0})
-			existing.update(item)
-			result.append(existing)
-		else:
-			item.update({'image_id':0, 'width':0, 'height':0})
-			result.append(item)
-	return result
+    '''Merge new data from source file and cached data'''
+    def get_existing(cached_data):
+        try:
+            if cached_data is None or len(cached_data) == 0: return None
+            return (r for r in cached_data if r['url'] == item['url']).next()
+        except:
+            return None
 
-class FileIdGenerator:
-	
-	counter = 0
-	
-	dirPath = ''
-	
-	def __init__(self, path):
-		self.dirPath = path
-	
-	def newId(self):
-		print glob.glob(os.path.join(dirname, filespec))
-#		while()
-		file_id_generator.counter += 1
-		return file_id_generator.counter
-	
+    result = []
+    for item in new_data:
+        existing = get_existing(cached_data)
+        if existing is not None:
+            if existing['image_url'] != item['image_url']:
+                existing.update({'image_id':0, 'width':0, 'height':0})
+            existing.update(item)
+            result.append(existing)
+        else:
+            item.update({'image_id':0, 'width':0, 'height':0})
+            result.append(item)
+    return result
 
-# Download images for wishlist records
 def download_images(data):
-	# Извлечь URL картинок для всех записей, где imade_id == 0
-	# Скачать эти картинки
-	# Для каждой картинки задать image_id (так, чтобы олни не пересекались с существующими)
-	# Отмасштабировать вся скаченные картинки и положить в кеш
-	# Определить размер для каждой новой картинки
-	# Обновить данные
-	images = {}
-	for record in data: images[record['image_url'], 0]
+    '''Download images for wishlist records and returns { image_url => [image_id, file_name] } dict'''
+    counter = 1
+    result = []
+    for item in data:
+        if int(item['image_id']): continue
+        while True:
+            new_file = os.path.join(image_path, str(counter))
+            if len(glob.glob(new_file + '.*')) < 1 and not os.path.exists(new_file): break;
+            counter += 1
+        ext = os.path.splitext(urlparse.urlparse(item['image_url']).path)[1].lower()
+        save_as = os.path.join(image_path, str(counter) + ext)
+        print '%s -> %s' % (item['image_url'], save_as)
+        download(item['image_url'], save_as)
+        item['image_id'] = counter
+        result.append(save_as)
+    return result
+
+def scale_images(dir_path, max_width, max_height):
+    os.popen(mogrify_cmd % (max_width, max_height, os.path.join(image_path, '*')))
+    return
 
 data = merge_data(read_source_file(source_file), load_data(data_file))
-save_data('merged-data.txt', data)
+new_images = download_images(data)
+scale_images(new_images, 300, 300)
+
+
+# save_data('merged-data.txt', data)
 
 #igGen = FileIdGenerator(image_path)
 #print igGen.dirPath

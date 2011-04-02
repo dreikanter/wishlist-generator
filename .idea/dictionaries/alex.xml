@@ -2,7 +2,9 @@
   <dictionary name="alex">
     <words>
       <w>imagemagick</w>
+      <w>mogrify</w>
       <w>resize</w>
+      <w>tuples</w>
       <w>wishlist</w>
     </words>
   </dictionary>
