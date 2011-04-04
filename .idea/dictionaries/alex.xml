@@ -3,6 +3,7 @@
     <words>
       <w>conf</w>
       <w>imagemagick</w>
+      <w>jpeg</w>
       <w>mogrify</w>
       <w>proc</w>
       <w>resize</w>
