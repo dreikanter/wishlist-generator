@@ -10,22 +10,9 @@ import csv
 from django.template import Context, Template
 from django.conf import settings
 
-# read source file
-# read cache if exists
-# merge
-# find new files
-# download to tmp
-# resize in tmp
-# get a list of {name,size} for each processed picture
-# drop unused images
-# add new files to images
-# clear tmp
-# store new image IDs
-# save data
-# generate html
-
-
 class WishlistConf:
+    '''configuration parameters container'''
+
     def __init__(self, conf_file = None, section = 'wishlist-builder'):
         try:
             conf = ConfigParser.ConfigParser({
@@ -61,6 +48,8 @@ class WishlistConf:
             raise
 
 class Logger:
+    '''Basic logger'''
+
     def __init__(self, file_name, show_messages = False):
         self.file_name = file_name
         self._show = show_messages
@@ -80,6 +69,8 @@ class Logger:
         self._file.write(m + '\n')
 
 class Wishlist:
+    '''Generates a wishlist web page using data from a text file, images from the web and Django template'''
+
     def __init__(self, conf):
         self._conf = conf
         self._log = Logger(self._conf.logFile)
@@ -89,6 +80,7 @@ class Wishlist:
         self._log.write(message)
 
     def generate(self):
+        '''Does everything!'''
         self._data = self.merge_data(self.read_source(), self.load_data())
         self.download_new_images()
         self.process_images()
@@ -252,8 +244,8 @@ class Wishlist:
         '''Generates an HTML file with Django template'''
         try:
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
-            t = Template(open(self._conf.template_file, 'r').read())
-            with open(self._conf.html_file) as o:
+            t = Template(open(self._conf.templateFile, 'r').read())
+            with open(self._conf.htmlFile, 'wt') as o:
                 o.write(t.render(Context({'items':self._data})))
 
         except Exception as ex:
@@ -262,7 +254,3 @@ class Wishlist:
 
 
 Wishlist(WishlistConf(None if len(sys.argv) < 2 else sys.argv[1])).generate()
-
-
-
-

@@ -1,2 +1,0 @@
-DEBUG = False
-TEMPLATE_DIRS = ('d:/wishlist/src')

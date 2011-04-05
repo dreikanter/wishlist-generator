@@ -2,3 +2,5 @@ Thumbs.db
 images/*
 tmp/*
 *.log
+cache.csv
+wishlist.html
