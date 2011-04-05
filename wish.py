@@ -17,23 +17,25 @@ class WishlistConf:
         try:
             conf = ConfigParser.ConfigParser({
                     'source_file':'wishlist.txt',
-                    'data_file':'cache.csv',
-                    'image_path':'images/',
+                    'images_path':'public_html/wishlist/images/',
+                    'images_url':'/wishlist/images/',
+                    'template_file':'wish-template.html',
+                    'html_file':'public_html/wishlist/index.html',
                     'identify_cmd':'identify -format %%f,%%W,%%H\\n %s',
                     'mogrify_cmd':'mogrify -define filter:blur=0.75 -filter cubic -resize %dx%d^> %s',
                     'csv_delimiter':';',
                     'max_image_width':300,
                     'max_image_height':300,
+                    'data_file':'cache.csv',
                     'log_file':'wish.log',
-                    'template_file':'wish-template.html',
-                    'html_file':'wishlist.html',
                 })
 
             conf.read(os.path.splitext(os.path.realpath(__file__))[0] + '.conf' if conf_file is None else conf_file)
 
             self.sourceFile = conf.get(section, 'source_file')
             self.dataFile = conf.get(section, 'data_file')
-            self.imagePath = conf.get(section, 'image_path')
+            self.imagesPath = conf.get(section, 'images_path')
+            self.imagesUrl = conf.get(section, 'images_url')
             self.identifyCmd = conf.get(section, 'identify_cmd')
             self.mogrifyCmd = conf.get(section, 'mogrify_cmd')
             self.csvDelimiter = conf.get(section, 'csv_delimiter')
@@ -43,9 +45,11 @@ class WishlistConf:
             self.templateFile = conf.get(section, 'template_file')
             self.htmlFile = conf.get(section, 'html_file')
 
-        except:
-            print("Error reading configuration file '%s' (section: '%s')" % (conf_file, section))
-            raise
+            self.ready = True
+
+        except Exception as ex:
+            print("Error reading configuration file '%s' (section: '%s'): %s" % (conf_file, section, str(ex)))
+            self.Ready = False
 
 class Logger:
     '''Basic logger'''
@@ -73,7 +77,7 @@ class Wishlist:
 
     def __init__(self, conf):
         self._conf = conf
-        self._log = Logger(self._conf.logFile)
+        self._log = Logger(self._conf.logFile, True)
         self._log.write('Initializing wishlist generator')
 
     def log(self, message):
@@ -86,6 +90,7 @@ class Wishlist:
         self.process_images()
         self.save_data()
         self.build_html()
+        self.cleanup()
         return
 
     def read_source(self):
@@ -193,11 +198,11 @@ class Wishlist:
         for item in self._data:
             if len(item['image_file']): continue
             while True:
-                new_file = os.path.join(self._conf.imagePath, str(counter))
+                new_file = os.path.join(self._conf.imagesPath, str(counter))
                 if len(glob.glob(new_file + '.*')) < 1 and not os.path.exists(new_file): break;
                 counter += 1
-            self.log('Downloading %s (%d)' % (item['image_url'], counter))
-            new_image = download(item['image_url'], os.path.join(self._conf.imagePath, str(counter)))
+            self.log('Getting %s (new image ID is %d)' % (item['image_url'], counter))
+            new_image = download(item['image_url'], os.path.join(self._conf.imagesPath, str(counter)))
             if new_image:
                 result.append(new_image)
                 item['image_file'] = os.path.basename(new_image)
@@ -217,12 +222,12 @@ class Wishlist:
                     break
 
         try:
-            image_files = [self._conf.imagePath + item['image_file'] for item in self._data
+            image_files = [self._conf.imagesPath + item['image_file'] for item in self._data
                 if (item['width'] == 0 or item['height'] == 0) and item['image_file']]
             if not image_files: return
 
             self.execute(self._conf.mogrifyCmd % (self._conf.maxImageWidth,
-                self._conf.maxImageHeight, os.path.join(self._conf.imagePath, '*')))
+                self._conf.maxImageHeight, os.path.join(self._conf.imagesPath, '*')))
 
             lines = self.execute(self._conf.identifyCmd % ' '.join(image_files), True)
             for line in lines:
@@ -246,10 +251,26 @@ class Wishlist:
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
             t = Template(open(self._conf.templateFile, 'r').read())
             with open(self._conf.htmlFile, 'wt') as o:
-                o.write(t.render(Context({'items':self._data})))
+                o.write(t.render(Context({'items':self._data, 'images_path':self._conf.imagesUrl})))
 
         except Exception as ex:
             self.log('Error generating HTML: ' + str(ex))
+
+    def cleanup(self):
+        '''Delete unused image files'''
+        deleted = []
+        actual_images = [item['image_file'] for item in self._data]
+        for image_file in glob.glob(os.path.join(self._conf.imagesPath, '*')):
+            if os.path.basename(image_file) in actual_images: continue
+            try:
+                deleted.append(os.path.join(self._conf.imagesPath, image_file))
+                os.remove(image_file)
+            except:
+                self.log('Error deleting "%s"' % image_file)
+
+        if len(deleted):
+            self.log('Old images were deleted: ' + ', '.join(deleted))
+
 
 
 

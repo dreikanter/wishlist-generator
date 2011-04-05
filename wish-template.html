@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<title>Untitled</title>
+</head>
+
+<body>
+
+<ul>
+{% for item in items %}<li><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt="">{{ item.desc }} -&gt; {{ item.url }}</li>
+{% endfor %}
+</ul>
+
+</body>
+</html>
