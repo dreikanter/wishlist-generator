@@ -242,8 +242,9 @@ class Wishlist:
     def execute(self, command, get_output = False):
         '''Executes a system command with a log message and optional output retrieving'''
         self.log('Executing command: ' + command)
+
         h = os.popen(command)
-        if get_output: return h.readlines()
+        return None if not get_output else h.readlines()
 
     def build_html(self):
         '''Generates an HTML file with Django template'''
@@ -251,7 +252,7 @@ class Wishlist:
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
             t = Template(open(self._conf.templateFile, 'r').read())
             with open(self._conf.htmlFile, 'wt') as o:
-                o.write(t.render(Context({'items':self._data, 'images_path':self._conf.imagesUrl})))
+                o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
 
         except Exception as ex:
             self.log('Error generating HTML: ' + str(ex))
@@ -270,8 +271,6 @@ class Wishlist:
 
         if len(deleted):
             self.log('Old images were deleted: ' + ', '.join(deleted))
-
-
 
 
 Wishlist(WishlistConf(None if len(sys.argv) < 2 else sys.argv[1])).generate()
