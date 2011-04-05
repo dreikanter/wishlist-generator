@@ -1,12 +1,14 @@
 ﻿import ConfigParser
+from datetime import datetime
 import glob
 import os
 import os.path
+import sys
 import urllib2
 import shutil
 import csv
-#from django.template import Context, Template
-#from django.conf import settings
+from django.template import Context, Template
+from django.conf import settings
 
 # read source file
 # read cache if exists
@@ -24,23 +26,38 @@ import csv
 
 
 class WishlistConf:
-    def __init__(self, conf_file, section_name):
+    def __init__(self, conf_file = None, section = 'wishlist-builder'):
         try:
-            conf = ConfigParser.ConfigParser()
-            conf.read(conf_file)
+            conf = ConfigParser.ConfigParser({
+                    'source_file':'wishlist.txt',
+                    'data_file':'cache.csv',
+                    'image_path':'images/',
+                    'identify_cmd':'identify -format %%f,%%W,%%H\\n %s',
+                    'mogrify_cmd':'mogrify -define filter:blur=0.75 -filter cubic -resize %dx%d^> %s',
+                    'csv_delimiter':';',
+                    'max_image_width':300,
+                    'max_image_height':300,
+                    'log_file':'wish.log',
+                    'template_file':'wish-template.html',
+                    'html_file':'wishlist.html',
+                })
 
-            self.sourceFile = conf.get(section_name, 'source_file')
-            self.dataFile = conf.get(section_name, 'data_file')
-            self.tmpPath = conf.get(section_name, 'tmp_path')
-            self.imagePath = conf.get(section_name, 'image_path')
-            self.identifyCmd = conf.get(section_name, 'identify_cmd')
-            self.mogrifyCmd = conf.get(section_name, 'mogrify_cmd')
-            self.csvDelimiter = conf.get(section_name, 'csv_delimiter')
-            self.maxImageWidth = int(conf.get(section_name, 'max_image_width'))
-            self.maxImageHeight = int(conf.get(section_name, 'max_image_height'))
+            conf.read(os.path.splitext(os.path.realpath(__file__))[0] + '.conf' if conf_file is None else conf_file)
+
+            self.sourceFile = conf.get(section, 'source_file')
+            self.dataFile = conf.get(section, 'data_file')
+            self.imagePath = conf.get(section, 'image_path')
+            self.identifyCmd = conf.get(section, 'identify_cmd')
+            self.mogrifyCmd = conf.get(section, 'mogrify_cmd')
+            self.csvDelimiter = conf.get(section, 'csv_delimiter')
+            self.maxImageWidth = int(conf.get(section, 'max_image_width'))
+            self.maxImageHeight = int(conf.get(section, 'max_image_height'))
+            self.logFile = conf.get(section, 'log_file')
+            self.templateFile = conf.get(section, 'template_file')
+            self.htmlFile = conf.get(section, 'html_file')
 
         except:
-            print "Error reading configuration file '%s' (section: '%s')" % (conf_file, section_name)
+            print("Error reading configuration file '%s' (section: '%s')" % (conf_file, section))
             raise
 
 class Logger:
@@ -48,25 +65,41 @@ class Logger:
         self.file_name = file_name
         self._show = show_messages
 
+        try:
+            self._file = open(file_name, 'at')
+        except:
+            print('Error initializing logger ("%s")' % file_name)
+            raise
+
+    def __del__(self):
+        self._file.close()
+
     def write(self, message):
-        if self._show: print(message)
+        m = '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), message)
+        if self._show: print(m)
+        self._file.write(m + '\n')
 
 class Wishlist:
-    def __init__(self, conf, log):
+    def __init__(self, conf):
         self._conf = conf
-        self._log = log
+        self._log = Logger(self._conf.logFile)
+        self._log.write('Initializing wishlist generator')
+
+    def log(self, message):
+        self._log.write(message)
 
     def generate(self):
         self._data = self.merge_data(self.read_source(), self.load_data())
         self.download_new_images()
         self.process_images()
         self.save_data()
+        self.build_html()
         return
 
     def read_source(self):
         '''Returns a collection of { url, image_url, description } tuples'''
         if not os.path.exists(self._conf.sourceFile):
-            print('Source file does not exists: ' + self._conf.sourceFile)
+            self.log('Source file does not exists: ' + self._conf.sourceFile)
             return []
 
         try:
@@ -79,7 +112,7 @@ class Wishlist:
             return result
 
         except Exception as ex:
-            print('Error reading source file: ' + str(ex))
+            self.log('Error reading source file: ' + str(ex))
             return []
 
     def save_data(self):
@@ -97,7 +130,7 @@ class Wishlist:
                 if row is not None: writer.writerow(row)
 
         except Exception as ex:
-            print('Error saving data to %s: %s' % (self._conf.dataFile, str(ex)))
+            self.log('Error saving data to %s: %s' % (self._conf.dataFile, str(ex)))
 
     def load_data(self):
         '''Load wishlist records from CSV file'''
@@ -108,15 +141,17 @@ class Wishlist:
             except:
                 return None
 
-        try:
-            result = []
-            reader = csv.reader(open(self._conf.dataFile, 'rb'), delimiter = self._conf.csvDelimiter)
-            for record in [to_dict(row) for row in reader]:
-                if record is not None: result.append(record)
-            return result
+        result = []
 
+        try:
+            if os.path.exists(self._conf.dataFile):
+                reader = csv.reader(open(self._conf.dataFile, 'rb'), delimiter = self._conf.csvDelimiter)
+                for record in [to_dict(row) for row in reader]:
+                    if record is not None: result.append(record)
         except Exception as ex:
-            print('Error loading data from %s: %s' % (self._conf.dataFile, str(ex)))
+            self.log('Error loading data from %s: %s' % (self._conf.dataFile, str(ex)))
+
+        return result
 
     def merge_data(self, new_data, cached_data):
         '''Merge new data from source file and cached data'''
@@ -145,7 +180,11 @@ class Wishlist:
 
         def download(url, file_name):
             '''Downloads and save a file from URL'''
-            r = urllib2.urlopen(urllib2.Request(url))
+            try:
+                r = urllib2.urlopen(urllib2.Request(url))
+            except:
+                return None
+
             ext = r.headers.subtype.lower()
             if ext not in ['jpeg', 'png', 'gif']: return None
             save_as = '%s.%s' % (file_name, ext)
@@ -165,13 +204,13 @@ class Wishlist:
                 new_file = os.path.join(self._conf.imagePath, str(counter))
                 if len(glob.glob(new_file + '.*')) < 1 and not os.path.exists(new_file): break;
                 counter += 1
-            print 'Downloading %s (%d)' % (item['image_url'], counter)
+            self.log('Downloading %s (%d)' % (item['image_url'], counter))
             new_image = download(item['image_url'], os.path.join(self._conf.imagePath, str(counter)))
             if new_image:
                 result.append(new_image)
                 item['image_file'] = os.path.basename(new_image)
             else:
-                print('Error downloading file')
+                self.log('Error downloading file')
 
         return result
 
@@ -188,6 +227,8 @@ class Wishlist:
         try:
             image_files = [self._conf.imagePath + item['image_file'] for item in self._data
                 if (item['width'] == 0 or item['height'] == 0) and item['image_file']]
+            if not image_files: return
+
             self.execute(self._conf.mogrifyCmd % (self._conf.maxImageWidth,
                 self._conf.maxImageHeight, os.path.join(self._conf.imagePath, '*')))
 
@@ -198,102 +239,30 @@ class Wishlist:
                 set_image_size(parts[0], int(parts[1]), int(parts[2]))
 
         except Exception as ex:
-            print('Error getting image resolution: ' + str(ex))
+            self.log('Error getting image resolution: ' + str(ex))
             return []
 
     def execute(self, command, get_output = False):
-        print 'Executing command: ' + command
+        '''Executes a system command with a log message and optional output retrieving'''
+        self.log('Executing command: ' + command)
         h = os.popen(command)
         if get_output: return h.readlines()
 
-#    def get_image_size(self, image_file):
-#        try:
-#            output = os.popen(self._conf.identifyCmd % image_file).readlines()
-#            parts = output[0].strip().split(',')
-#            if len(parts) != 3: raise Exception('Identify output: "%s"' % output)
-#            width, height = parts[1], parts[2]
-#            return int(width), int(height)
-#
-#        except Exception as ex:
-#            print('Error getting image size for "%s": %s' % (image_file, str(ex)))
-#            return 0, 0
+    def build_html(self):
+        '''Generates an HTML file with Django template'''
+        try:
+            settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
+            t = Template(open(self._conf.template_file, 'r').read())
+            with open(self._conf.html_file) as o:
+                o.write(t.render(Context({'items':self._data})))
+
+        except Exception as ex:
+            self.log('Error generating HTML: ' + str(ex))
 
 
 
-Wishlist(WishlistConf('build.conf', 'wishlist-builder'), Logger('wishlist.log')).generate()
+Wishlist(WishlistConf(None if len(sys.argv) < 2 else sys.argv[1])).generate()
 
 
 
-
-# save_data('merged-data.txt', data)
-
-#igGen = FileIdGenerator(image_path)
-#print igGen.dirPath
-
-#id_gen = new image_id_generator()
-#print id_gen.new_image_id()
-
-
-#save_data(data_file, 1)
-
-#i = 0
-#for item in read_source_file(source_file):
-#	i += 1
-#	print download(item[2], tmp_path + str(i))
-#
-#print get_image_size([tmp_path + file_name for file_name in os.listdir(tmp_path)])
-
-
-#	map_file = ''
-#
-#	images = {}
-#
-#	max_id = -1;
-#
-#	def __init__(self, source_file):
-#		self.map_file = image_map_file
-#		if exists(self.map_file):
-#			self.items = open(self.map_file, 'r').read().strip().split('\n')
-#			for item in self.items:
-#				parts = item.split(':', 2)
-#				if len(parts) == 2:
-#					id = int(parts[0])
-#					self.images[id] = parts[1]
-#					if id > self.max_id: self.max_id = id
-#
-#	def get_id(self, url):
-#		id = self.find_id(url)
-#		if id >= 0:
-#			return id
-#		else:
-#			self.images[++max_id] = url
-#			return max_id
-#		return
-#
-#	def find_id(self, search_url):
-#		for id, url in self.images:
-#			if url == search_url: return id
-#		return -1
-#
-#
-#
-#w = Wishlist('wishlist.txt')
-
-
-#settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
-
-#data_file = 'wishlist.txt'
-#template_file = 'template.html'
-
-#f = open(data_file, 'r')
-#items = f.read().split('\n\n')
-#parsed_items = []
-#for item in items:
-#	parts = item.strip().split('\n')
-#	if len(parts) == 3:
-#		parsed_items.append({'title':parts[0], 'url':parts[1], 'image':parts[2]})
-
-#f = open(template_file, 'r')
-#t = Template(f.read())
-#print(t.render(Context({'item_list':parsed_items})))
 
