@@ -78,13 +78,13 @@ class Wishlist:
     def __init__(self, conf):
         self._conf = conf
         self._log = Logger(self._conf.logFile, True)
-        self._log.write('Initializing wishlist generator')
 
     def log(self, message):
         self._log.write(message)
 
     def generate(self):
         '''Does everything!'''
+        self._log.write('Generating wishlist')
         self._data = self.merge_data(self.read_source(), self.load_data())
         self.download_new_images()
         self.process_images()
@@ -95,6 +95,7 @@ class Wishlist:
 
     def read_source(self):
         '''Returns a collection of { url, image_url, description } tuples'''
+        self.log('Loading ' + self._conf.sourceFile)
         if not os.path.exists(self._conf.sourceFile):
             self.log('Source file does not exists: ' + self._conf.sourceFile)
             return []
@@ -106,6 +107,7 @@ class Wishlist:
                 if len(parts) != 3: continue
                 description, url, image_url = parts
                 result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'desc':description.strip() })
+            self.log('Got %d records' % len(result))
             return result
 
         except:
@@ -122,6 +124,7 @@ class Wishlist:
                 return None
 
         try:
+            self.log('Saving %d records' % self._data)
             writer = csv.writer(open(self._conf.dataFile, 'wb'), delimiter = self._conf.csvDelimiter, quoting = csv.QUOTE_MINIMAL)
             for row in [to_csv_row(record) for record in self._data]:
                 if row is not None: writer.writerow(row)
@@ -142,9 +145,11 @@ class Wishlist:
 
         try:
             if os.path.exists(self._conf.dataFile):
+                self.log('Loading cached data')
                 reader = csv.reader(open(self._conf.dataFile, 'rb'), delimiter = self._conf.csvDelimiter)
                 for record in [to_dict(row) for row in reader]:
                     if record is not None: result.append(record)
+                self.log('Got %d records' % len(result))
         except:
             self.log('Error loading data from ' + self._conf.dataFile)
 
@@ -227,6 +232,7 @@ class Wishlist:
             image_files = [self._conf.imagesPath + item['image_file'] for item in self._data
                 if (item['width'] == 0 or item['height'] == 0) and item['image_file']]
             if not image_files: return
+            self.log('Processing %d images' % len(image_files))
 
             self.execute(self._conf.mogrifyCmd % (self._conf.maxImageWidth,
                 self._conf.maxImageHeight, os.path.join(self._conf.imagesPath, '*')))
@@ -251,6 +257,7 @@ class Wishlist:
     def build_html(self):
         '''Generates an HTML file with Django template'''
         try:
+            self.log('Generating HTML (template: %s)' % os.path.basename(self._conf.templateFile))
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
             t = Template(open(self._conf.templateFile, 'r').read())
             o = open(self._conf.htmlFile, 'wt')
