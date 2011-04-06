@@ -47,8 +47,8 @@ class WishlistConf:
 
             self.ready = True
 
-        except Exception as ex:
-            print("Error reading configuration file '%s' (section: '%s'): %s" % (conf_file, section, str(ex)))
+        except:
+            print("Error reading configuration file '%s' (section: '%s')" % (conf_file, section))
             self.Ready = False
 
 class Logger:
