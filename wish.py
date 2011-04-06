@@ -1,12 +1,11 @@
-﻿import ConfigParser
-from datetime import datetime
-import glob
+﻿import sys
 import os
-import os.path
-import sys
+import glob
+import datetime
 import urllib2
 import shutil
 import csv
+import ConfigParser
 from django.template import Context, Template
 from django.conf import settings
 
@@ -68,7 +67,7 @@ class Logger:
         self._file.close()
 
     def write(self, message):
-        m = '[%s] %s' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), message)
+        m = '[%s] %s' % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), message)
         if self._show: print(m)
         self._file.write(m + '\n')
 
