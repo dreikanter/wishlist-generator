@@ -124,7 +124,7 @@ class Wishlist:
                 return None
 
         try:
-            self.log('Saving %d records' % self._data)
+            self.log('Saving %d records' % len(self._data))
             writer = csv.writer(open(self._conf.dataFile, 'wb'), delimiter = self._conf.csvDelimiter, quoting = csv.QUOTE_MINIMAL)
             for row in [to_csv_row(record) for record in self._data]:
                 if row is not None: writer.writerow(row)
