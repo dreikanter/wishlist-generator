@@ -47,8 +47,8 @@ class WishlistConf:
 
             self.ready = True
 
-        except:
-            print("Error reading configuration file '%s' (section: '%s')" % (conf_file, section))
+        except Exception, ex:
+            print("Error reading configuration file '%s' (section: '%s'): %s" % (conf_file, section, str(ex)))
             self.Ready = False
 
 class Logger:
@@ -60,8 +60,8 @@ class Logger:
 
         try:
             self._file = open(file_name, 'at')
-        except:
-            print('Error initializing logger ("%s")' % file_name)
+        except Exception, ex:
+            print('Error initializing logger ("%s"): %s' % (file_name, str(ex)))
             raise
 
     def __del__(self):
@@ -110,8 +110,8 @@ class Wishlist:
             self.log('Got %d records' % len(result))
             return result
 
-        except:
-            self.log('Error reading source file')
+        except Exception, ex:
+            self.log('Error reading source file: %s' % str(ex))
             return []
 
     def save_data(self):
@@ -129,8 +129,8 @@ class Wishlist:
             for row in [to_csv_row(record) for record in self._data]:
                 if row is not None: writer.writerow(row)
 
-        except:
-            self.log('Error saving data to ' + self._conf.dataFile)
+        except Exception, ex:
+            self.log('Error saving data to "%s": %s' % (self._conf.dataFile, str(ex)))
 
     def load_data(self):
         '''Load wishlist records from CSV file'''
@@ -150,8 +150,8 @@ class Wishlist:
                 for record in [to_dict(row) for row in reader]:
                     if record is not None: result.append(record)
                 self.log('Got %d records' % len(result))
-        except:
-            self.log('Error loading data from ' + self._conf.dataFile)
+        except Exception, ex:
+            self.log('Error loading data from "%s": %s' % (self._conf.dataFile, str(ex)))
 
         return result
 
@@ -243,8 +243,8 @@ class Wishlist:
                 if len(parts) != 3: continue
                 set_image_size(parts[0], int(parts[1]), int(parts[2]))
 
-        except:
-            self.log('Error getting image resolution')
+        except Exception, ex:
+            self.log('Error getting image resolution: ' + str(ex))
             return []
 
     def execute(self, command, get_output = False):
@@ -264,8 +264,8 @@ class Wishlist:
             o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
             o.close()
 
-        except:
-            self.log('Error generating HTML')
+        except Exception, ex:
+            self.log('Error generating HTML: ' + str(ex))
 
     def cleanup(self):
         '''Delete unused image files'''
@@ -276,8 +276,8 @@ class Wishlist:
             try:
                 deleted.append(os.path.join(self._conf.imagesPath, image_file))
                 os.remove(image_file)
-            except:
-                self.log('Error deleting "%s"' % image_file)
+            except Exception, ex:
+                self.log('Error deleting "%s": %s' % (image_file, str(ex)))
 
         if len(deleted):
             self.log('Old images were deleted: ' + ', '.join(deleted))
