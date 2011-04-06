@@ -4,3 +4,5 @@ tmp/*
 *.log
 cache.csv
 wishlist.html
+.idea/dictionaries/*
+.idea/workspace.xml
