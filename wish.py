@@ -187,7 +187,9 @@ class Wishlist:
             save_as = '%s.%s' % (file_name, ext)
 
             try:
-                with open(save_as, 'wb') as f: shutil.copyfileobj(r, f)
+                f = open(save_as, 'wb')
+                shutil.copyfileobj(r, f)
+                f.close()
             finally:
                 r.close()
 
@@ -251,8 +253,9 @@ class Wishlist:
         try:
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
             t = Template(open(self._conf.templateFile, 'r').read())
-            with open(self._conf.htmlFile, 'wt') as o:
-                o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
+            o = open(self._conf.htmlFile, 'wt')
+            o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
+            o.close()
 
         except:
             self.log('Error generating HTML')
