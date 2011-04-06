@@ -108,8 +108,8 @@ class Wishlist:
                 result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'desc':description.strip() })
             return result
 
-        except Exception as ex:
-            self.log('Error reading source file: ' + str(ex))
+        except:
+            self.log('Error reading source file')
             return []
 
     def save_data(self):
@@ -126,8 +126,8 @@ class Wishlist:
             for row in [to_csv_row(record) for record in self._data]:
                 if row is not None: writer.writerow(row)
 
-        except Exception as ex:
-            self.log('Error saving data to %s: %s' % (self._conf.dataFile, str(ex)))
+        except:
+            self.log('Error saving data to ' + self._conf.dataFile)
 
     def load_data(self):
         '''Load wishlist records from CSV file'''
@@ -145,8 +145,8 @@ class Wishlist:
                 reader = csv.reader(open(self._conf.dataFile, 'rb'), delimiter = self._conf.csvDelimiter)
                 for record in [to_dict(row) for row in reader]:
                     if record is not None: result.append(record)
-        except Exception as ex:
-            self.log('Error loading data from %s: %s' % (self._conf.dataFile, str(ex)))
+        except:
+            self.log('Error loading data from ' + self._conf.dataFile)
 
         return result
 
@@ -235,8 +235,8 @@ class Wishlist:
                 if len(parts) != 3: continue
                 set_image_size(parts[0], int(parts[1]), int(parts[2]))
 
-        except Exception as ex:
-            self.log('Error getting image resolution: ' + str(ex))
+        except:
+            self.log('Error getting image resolution')
             return []
 
     def execute(self, command, get_output = False):
@@ -254,8 +254,8 @@ class Wishlist:
             with open(self._conf.htmlFile, 'wt') as o:
                 o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
 
-        except Exception as ex:
-            self.log('Error generating HTML: ' + str(ex))
+        except:
+            self.log('Error generating HTML')
 
     def cleanup(self):
         '''Delete unused image files'''
