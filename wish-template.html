@@ -3,11 +3,12 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
-<title>Wishlist</title>
+<title>Вишлист</title>
 <link rel="stylesheet" href="/wishlist/style.css" type="text/css">
 </head>
 
 <body>
+<h1>Вишлист</h1>
 <ul id="wishlist">
 {% for item in items %}<li><a href="{{ item.url }}"><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt=""><p>{{ item.desc }}</p></a></li>
 {% endfor %}</ul>
