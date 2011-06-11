@@ -59,7 +59,7 @@ class Logger:
         self._show = show_messages
 
         try:
-            self._file = open(file_name, 'at', 'utf-8')
+            self._file = open(file_name, 'at')
         except Exception, ex:
             print('Error initializing logger ("%s"): %s' % (file_name, str(ex)))
             raise
