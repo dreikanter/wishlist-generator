@@ -8,11 +8,8 @@
 </head>
 
 <body>
-
 <ul id="wishlist">
-{% for item in items %}<li><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt="">{{ item.desc }} -&gt; {{ item.url }}</li>
-{% endfor %}
-</ul>
-
+{% for item in items %}<li><a href="{{ item.url }}"><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt=""><p>{{ item.desc }}</p></a></li>
+{% endfor %}</ul>
 </body>
 </html>
