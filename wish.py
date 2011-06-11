@@ -125,7 +125,7 @@ class Wishlist:
 
         try:
             self.log('Saving %d records' % len(self._data))
-            writer = csv.writer(open(self._conf.dataFile, 'wb', 'utf-8'), delimiter = self._conf.csvDelimiter, quoting = csv.QUOTE_MINIMAL)
+            writer = csv.writer(open(self._conf.dataFile, 'wb'), delimiter = self._conf.csvDelimiter, quoting = csv.QUOTE_MINIMAL)
             for row in [to_csv_row(record) for record in self._data]:
                 if row is not None: writer.writerow(row)
 
@@ -146,7 +146,7 @@ class Wishlist:
         try:
             if os.path.exists(self._conf.dataFile):
                 self.log('Loading cached data')
-                reader = csv.reader(open(self._conf.dataFile, 'rb', 'utf-8'), delimiter = self._conf.csvDelimiter)
+                reader = csv.reader(open(self._conf.dataFile, 'rb'), delimiter = self._conf.csvDelimiter)
                 for record in [to_dict(row) for row in reader]:
                     if record is not None: result.append(record)
                 self.log('Got %d records' % len(result))
@@ -192,7 +192,7 @@ class Wishlist:
             save_as = '%s.%s' % (file_name, ext)
 
             try:
-                f = open(save_as, 'wb', 'utf-8')
+                f = open(save_as, 'wb')
                 shutil.copyfileobj(r, f)
                 f.close()
             finally:
@@ -260,7 +260,7 @@ class Wishlist:
             self.log('Generating HTML (template: %s)' % os.path.basename(self._conf.templateFile))
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
             t = Template(open(self._conf.templateFile, 'r', 'utf-8').read())
-            o = open(self._conf.htmlFile, 'wt', 'utf-8')
+            o = open(self._conf.htmlFile, 'wt')
             o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
             o.close()
 
