@@ -59,7 +59,7 @@ class Logger:
         self._show = show_messages
 
         try:
-            self._file = open(file_name, 'at')
+            self._file = codecs.open(file_name, 'at', 'utf-8')
         except Exception, ex:
             print('Error initializing logger ("%s"): %s' % (file_name, str(ex)))
             raise
@@ -102,7 +102,7 @@ class Wishlist:
 
         try:
             result = []
-            for item in open(self._conf.sourceFile, 'r', 'utf-8').read().strip().split('\n\n'):
+            for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().strip().split('\n\n'):
                 parts = item.split('\n')
                 if len(parts) != 3: continue
                 description, url, image_url = parts
@@ -259,8 +259,8 @@ class Wishlist:
         try:
             self.log('Generating HTML (template: %s)' % os.path.basename(self._conf.templateFile))
             settings.configure(DEBUG=True, TEMPLATE_DEBUG=True, TEMPLATE_DIRS=(''))
-            t = Template(open(self._conf.templateFile, 'r', 'utf-8').read())
-            o = open(self._conf.htmlFile, 'wt')
+            t = Template(codecs.open(self._conf.templateFile, 'r', 'utf-8').read())
+            o = codecs.open(self._conf.htmlFile, 'wt', 'utf-8')
             o.write(t.render(Context({'items':self._data, 'images_url':self._conf.imagesUrl})))
             o.close()
 
