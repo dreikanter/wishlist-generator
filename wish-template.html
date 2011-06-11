@@ -2,14 +2,14 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
-	<title>Wishlist</title>
-	<link rel="stylesheet" href="/wishlist/style.css" type="text/css">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+<title>Wishlist</title>
+<link rel="stylesheet" href="/wishlist/style.css" type="text/css">
 </head>
 
 <body>
 
-<ul>
+<ul id="wishlist">
 {% for item in items %}<li><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt="">{{ item.desc }} -&gt; {{ item.url }}</li>
 {% endfor %}
 </ul>
