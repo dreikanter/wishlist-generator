@@ -10,7 +10,7 @@
 <body>
 <h1>Вишлист</h1>
 <ul id="wishlist">
-{% for item in items %}<li><a href="{{ item.url }}"><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt=""><p>{{ item.desc }}</p></a></li>
+{% for item in items %}<li><a href="{{ item.url }}"><p>{{ item.desc }}</p><img src="{{ images_url }}{{ item.image_file }}" width="{{ item.width }}" height="{{ item.height }}" alt=""></a></li>
 {% endfor %}</ul>
 </body>
 </html>

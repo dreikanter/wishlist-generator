@@ -177,9 +177,10 @@ ul#wishlist {
 	list-style-type:none;
 }
 ul#wishlist li {
-	margin:0 1.5em;
-	width:300px;
-	float:left;
+    margin:0 1.5em;
+    width:300px;
+    height:400px;
+    float:left;
 }
 ul#wishlist li p {
 	padding:.5em 1em 3em 1em;
