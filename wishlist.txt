@@ -81,3 +81,51 @@ http://mmedia.ozon.ru/multimedia/books_covers/0961392118.01.lzzzzzzz.jpg
 Toby Segaran , Jeff Hammerbacher. Beautiful Data: The Stories Behind Elegant Data Solutions
 http://www.amazon.com/gp/product/0596157118/?tag=bibbooirea-20
 http://ecx.images-amazon.com/images/I/51THqQiQV1L._BO2,204,203,200_PIsitb-sticker-arrow-click,TopRight,35,-76_AA300_SH20_OU01_.jpg
+
+Search Analytics for Your Site by Louis Rosenfeld (Rosenfeld Media)
+http://rosenfeldmedia.com/books/searchanalytics/
+http://www.rosenfeldmedia.com/i/covers/search-analytics-md.gif
+
+В поисках счастья, Мартин Селигман
+http://mann-ivanov-ferber.ru/books/paperbook/AuthenticHappiness/
+http://mann-ivanov-ferber.ru/on-line/images/96FAECA7-4B83-42FF-A147-25B1D9679B09/photo.jpg
+
+Далеко, далеко, Сергей Доля
+http://mann-ivanov-ferber.ru/books/paperbook/FarAway/
+http://mann-ivanov-ferber.ru/on-line/images/23CA5FE5-1F4E-410D-9C0E-80CAC05B16D7/photo.jpg
+
+Позитивная иррациональность, Дэн Ариели
+http://mann-ivanov-ferber.ru/books/paperbook/PerfectlyIrrational/
+http://mann-ivanov-ferber.ru/on-line/images/99EB93D6-9883-443F-BA48-4D9A1DEAFB69/photo.jpg
+
+И ботаники делают бизнес, Максим Котин
+http://mann-ivanov-ferber.ru/books/realnistorii/botaniki/
+http://mann-ivanov-ferber.ru/on-line/images/0C559888-B141-4741-8900-CC9681250FA6/photo.jpg
+
+Codex Seraphinianus
+http://www.amazon.com/Codex-Seraphinianus-Luigi-Serafini/dp/8817013897/ref=wl_it_dp_o?ie=UTF8&coliid=IWQ1AV68GBKJJ&colid=2BP190GJCKIUL
+http://ecx.images-amazon.com/images/I/417o8epHWZL._SL500_AA300_.jpg
+
+Introducing HTML5, Bruce Lawson, Remy Sharp [Kindle Edition]
+http://www.amazon.com/Introducing-HTML5-Voices-Matter-ebook/dp/B003WJRW2U/ref=wl_it_dp_o?ie=UTF8&coliid=IIYOGTMUZ6YQ1&colid=2BP190GJCKIUL
+http://www.amazon.com/gp/product/images/B003WJRW2U/ref=dp_image_0?ie=UTF8&n=133140011&s=digital-text
+
+Designing with Web Standards (3rd Edition) [Kindle Edition], Jeffrey Zeldman, Ethan Marcotte
+http://www.amazon.com/Designing-Web-Standards-3rd-ebook/dp/B002WIG3UO/ref=wl_it_dp_o?ie=UTF8&coliid=I1TU6NM0TCZ0SF&colid=2BP190GJCKIUL
+http://www.amazon.com/gp/product/images/B002WIG3UO/ref=dp_image_0?ie=UTF8&n=133140011&s=digital-text
+
+The Visual Display of Quantitative Information, Edward R. Tufte
+http://www.amazon.com/Visual-Display-Quantitative-Information/dp/0961392142/ref=wl_it_dp_o?ie=UTF8&coliid=IFM06LF5H8FTR&colid=2BP190GJCKIUL
+http://www.amazon.com/gp/reader/0961392142/ref=sib_dp_pt#reader-link
+
+Visual Explanations: Images and Quantities, Evidence and Narrative, Edward R. Tufte
+http://www.amazon.com/Visual-Explanations-Quantities-Evidence-Narrative/dp/0961392126/ref=wl_it_dp_o?ie=UTF8&coliid=I12EYZWLJ5J7FD&colid=2BP190GJCKIUL
+http://www.amazon.com/gp/reader/0961392126/ref=sib_dp_pt#reader-link
+
+Concrete Mathematics: A Foundation for Computer Science (2nd Edition), Ronald L. Graham, Donald E. Knuth, Oren Patashnik
+http://www.amazon.com/Concrete-Mathematics-Foundation-Computer-Science/dp/0201558025/ref=wl_it_dp_o?ie=UTF8&coliid=I1R3Y6ZS7ZM4R5&colid=2BP190GJCKIUL
+http://www.amazon.com/gp/product/images/0201558025/ref=dp_image_0?ie=UTF8&n=283155&s=books
+
+Zen Habits: Handbook For Life, Leo Babauta [Kindle Edition]
+http://www.amazon.com/Zen-Habits-Handbook-Life-ebook/dp/B001OOMMQ6/ref=tmm_kin_title_0?ie=UTF8&m=A2JEPUQV26074G
+http://www.amazon.com/gp/reader/1441421890/ref=sib_dp_pt#reader-link
