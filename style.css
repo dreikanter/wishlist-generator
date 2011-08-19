@@ -187,6 +187,10 @@ ul#wishlist li p {
     text-align:left;
     font-size:1.2em;
 }
+p.status-got-it a {
+    text-decoration:line-through;
+    color:silver;
+}
 
 /**
  * Non-semantic helper classes: please define your styles before this section.
