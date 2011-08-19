@@ -11,7 +11,7 @@
 <body>
 <h1>Вишлист</h1>
 <ul id="wishlist">
-{% for item in items %}<li><a href="{{ item.url|safe }}"><p{% if item.status %} class="status-{{ item.status|safe }}"{% endif %}>{{ item.desc }}</p><img src="{{ images_url|safe }}{{ item.image_file|safe }}" width="{{ item.width|safe }}" height="{{ item.height|safe }}" alt=""></a></li>
+{% for item in items %}<li{% if item.status %} class="status-{{ item.status|safe }}"{% endif %}><a href="{{ item.url|safe }}"><p>{{ item.desc }}</p><img src="{{ images_url|safe }}{{ item.image_file|safe }}" width="{{ item.width|safe }}" height="{{ item.height|safe }}" alt=""></a></li>
 {% endfor %}</ul>
 </body>
 </html>
