@@ -119,7 +119,7 @@ class Wishlist:
         def to_csv_row(record):
             try:
                 return [record['url'], record['image_url'], record['image_file'],
-                        record['width'], record['height'], record['desc']]
+                        record['width'], record['height'], record['desc'].encode('utf-8')]
             except:
                 return None
 
@@ -137,7 +137,7 @@ class Wishlist:
         def to_dict(row):
             try:
                 return { 'url':row[0], 'image_url':row[1], 'image_file':row[2],
-                         'width':int(row[3]), 'height':int(row[4]), 'desc':row[5] }
+                         'width':int(row[3]), 'height':int(row[4]), 'desc':row[5].encode('utf-8') }
             except:
                 return None
 
