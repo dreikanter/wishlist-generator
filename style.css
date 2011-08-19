@@ -187,6 +187,9 @@ ul#wishlist li p {
     text-align:left;
     font-size:1.2em;
 }
+li.status-got-it a {
+    text-decoration:none;
+}
 li.status-got-it a p {
     text-decoration:line-through;
     color:silver;
