@@ -102,11 +102,11 @@ class Wishlist:
 
         try:
             result = []
-            for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().strip().split('\n\n'):
+            for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().strip().split('\n--\n'):
                 parts = item.split('\n')
                 if len(parts) != 3: continue
-                description, url, image_url = parts
-                result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'desc':description.strip() })
+                description, status, url, image_url = parts
+                result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'status':status, 'desc':description.strip() })
             self.log('Got %d records' % len(result))
             return result
 
@@ -119,7 +119,7 @@ class Wishlist:
         def to_csv_row(record):
             try:
                 return [record['url'], record['image_url'], record['image_file'],
-                        record['width'], record['height'], record['desc'].encode('utf-8')]
+                        record['width'], record['height'], record['status'], record['desc'].encode('utf-8')]
             except:
                 return None
 
@@ -136,8 +136,15 @@ class Wishlist:
         '''Load wishlist records from CSV file'''
         def to_dict(row):
             try:
-                return { 'url':row[0], 'image_url':row[1], 'image_file':row[2],
-                         'width':int(row[3]), 'height':int(row[4]), 'desc':row[5].encode('utf-8') }
+                return {
+                            'url':row[0],
+                            'image_url':row[1],
+                            'image_file':row[2],
+                            'width':int(row[3]),
+                            'height':int(row[4]),
+                            'status':row[5],
+                            'desc':row[6].encode('utf-8')
+                        }
             except:
                 return None
 
