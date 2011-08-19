@@ -189,7 +189,7 @@ ul#wishlist li p {
 }
 li.status-got-it a p {
     text-decoration:line-through;
-    color:gray;
+    color:silver;
 }
 
 /**
