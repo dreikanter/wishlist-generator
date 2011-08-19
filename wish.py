@@ -102,7 +102,7 @@ class Wishlist:
 
         try:
             result = []
-            for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().strip().split('\n--\n'):
+            for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().split('--'):
                 parts = item.split('\n')
                 if len(parts) != 3: continue
                 description, status, url, image_url = parts
