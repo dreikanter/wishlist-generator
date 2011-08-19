@@ -103,7 +103,7 @@ class Wishlist:
         try:
             result = []
             for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().split('--'):
-                parts = item.split('\n')
+                parts = item.strip().split('\n')
                 if len(parts) != 4: continue
                 description, status, url, image_url = parts
                 result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'status':status, 'desc':description.strip() })
