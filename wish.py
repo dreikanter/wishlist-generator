@@ -104,7 +104,7 @@ class Wishlist:
             result = []
             for item in codecs.open(self._conf.sourceFile, 'r', 'utf-8').read().split('--'):
                 parts = item.split('\n')
-                if len(parts) != 3: continue
+                if len(parts) != 4: continue
                 description, status, url, image_url = parts
                 result.append({ 'url':url.strip(), 'image_url':image_url.strip(), 'status':status, 'desc':description.strip() })
             self.log('Got %d records' % len(result))
